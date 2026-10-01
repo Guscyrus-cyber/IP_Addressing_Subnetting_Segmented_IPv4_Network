@@ -35,8 +35,6 @@ Each octet represents 8 bits:
 
 192 168 10 25
 
-\| \| \| \|
-
 8 bits 8 bits 8 bits 8 bits
 
 8 + 8 + 8 + 8 = 32 bits
@@ -72,12 +70,12 @@ For example:
 192.168.10.192/26
 
 These could represent:\
-\
+
 Subnet 1 → Employees\
 Subnet 2 → Servers\
 Subnet 3 → Security systems\
 Subnet 4 → Guest devices\
-\
+
 This process is called subnetting.
 
 Subnetting is particularly important to cybersecurity because segmentation can help limit unnecessary communication between systems.
@@ -160,23 +158,11 @@ Imagine:
 
 Internet
 
-\|
-
 Firewall
-
-\|
 
 Employee Network
 
-\|
-
 Compromised PC
-
-\|
-
-X
-
-\|
 
 Server Network
 
@@ -188,15 +174,9 @@ The conceptual environment will look similar to:
 
 Router
 
-/ \\
-
-/ \\
-
 Subnet A Subnet B
 
 192.168.10.0/26 192.168.10.64/26
-
-\| \|
 
 Host A Host B
 
@@ -237,11 +217,7 @@ and my Mac is host:
 
 192.168.1.193 which is the private IP address. (Images 1 and 2)
 
-\
-\
-\
 Step 2 — Understand the /24 Subnet
-----------------------------------
 
 why the current network is /24.
 
@@ -251,13 +227,11 @@ command returned: 255.255.255.0
 
 That is the decimal subnet mask corresponding to: 255.255.255.0 = /24
 
-### What /24 means
+What /24 means
 
 IPv4 contains 32 bits. With /24, the first 24 bits identify the network, while the remaining 8 bits identify individual hosts:
 
 192 . 168 . 1 . 193
-
-───────────── ───
 
 Network Host
 
@@ -277,8 +251,6 @@ Broadcast: 192.168.1.255
 
 Usable hosts: 192.168.1.1 – 192.168.1.254 (Image 3)
 
-\
-\
 Step 3 — Find the Default Gateway
 
 Identifying the router/default gateway that allows the Mac to leave its local subnet.
@@ -307,11 +279,7 @@ Internet
 
 The default gateway is the router my Mac sends packets to when their destination is outside the local subnet. (Image 4)\
 
-\
-\
-\
 Step 4 — Test Communication Inside the Subnet
----------------------------------------------
 
 Communicating my Mac with its default gateway.
 
@@ -359,10 +327,8 @@ MacBook ◄── ICMP Echo Reply ──── Router
 
 Result: 4/4 successful (Image 5)
 
-\
-\
 Step 5 A— Now We Start Subnetting
----------------------------------
+
 
 I am going to take a /24 network and learn how to divide it into smaller networks. I will calculate it manually first, because understanding the calculation is an important networking/SOC skill.
 
@@ -399,7 +365,7 @@ Guest 192.168.10.192/26
 
 why the subnet addresses jump by 64 (0 → 64 → 128 → 192) and how we determine the usable host and broadcast address for each subnet.
 
-## Step 5 B— Calculate the Four /26 Subnets
+Step 5 B— Calculate the Four /26 Subnets
 
 Now I’ll see why the addresses increase by 64.
 
@@ -420,7 +386,7 @@ Therefore the four segments are:
 | Security/SOC | 192.168.10.128/26 | .129 – .190       | .191      |
 | Guest        | 192.168.10.192/26 | .193 .254         | .255      |
 
-### Why only 62 usable hosts?
+Why only 62 usable hosts?
 
 A /26 leaves:
 
@@ -444,15 +410,12 @@ Network: 192.168.10.64
 
 First host: 192.168.10.65
 
-...
 
 Last host: 192.168.10.126
-
 Broadcast: 192.168.10.127
 
-\
 Step 6 — Verify a /26 Subnet Mathematically
--------------------------------------------
+
 
 verifying the Servers subnet: 192.168.10.64/26\
 So, there is\
@@ -493,25 +456,17 @@ Broadcast: 192.168.10.127
 
 Total Addresses: 64 (Image 6)
 
-\
-\
-\
 Step 7 — Build the Segmented IPv4 Network
-=========================================
 
 I need separate virtual hosts/networks so that I can actually demonstrate:
 
 Employee subnet
 
-│
-
 ├──── Router ──── Server subnet
 
-│
 
 ├─────────────── SOC subnet
 
-│
 
 └─────────────── Guest subnet
 
@@ -524,15 +479,11 @@ Real Wi-Fi:
 
 192.168.1.0/24
 
-│
-
 └── MacBook: 192.168.1.193
 
 Inside Docker I am building:
 
 Virtual Lab Network: 192.168.10.0/24
-
-│
 
 ├── Employees: 192.168.10.0/26
 
@@ -547,8 +498,6 @@ Next, I'll put virtual hosts (containers) into these subnets and assign them I
 So in general docker gives us an actual controlled networking environment where the subnetting concepts can be tested safely.
 
 So, Docker virtual network is an actual functioning network environment used to generate and observe network behavior. (Image 7)
-
-Top of Form
 
 Step 8 — Verify Docker Is Running\
 \
@@ -570,10 +519,6 @@ Running: 3
 
 That confirms the Docker engine is active. (Images 8, 9, and 10)
 
-\
-\
-\
-
 Step 9— Create the First Segmented IPv4 Network
 
 Now creating the first actual lab subnet:
@@ -584,11 +529,11 @@ Employees subnet
 
 I run:
 
-docker network create \\
+docker network create 
 
---driver bridge \\
+--driver bridge 
 
---subnet 192.168.10.0/26 \\
+--subnet 192.168.10.0/26 
 
 employees_net
 
@@ -596,7 +541,7 @@ If successful, Docker will return a long network ID.
 
 Then immediately I verify it with: docker network inspect employees_net
 
-### What this does
+What this does
 
 Docker: Create an isolated Layer-3 IPv4 network\
 Network: 192.168.10.0\
@@ -622,8 +567,6 @@ So Docker has created a real isolated IPv4 network:
 
 employees_net
 
-│
-
 ├── Network: 192.168.10.0/26
 
 ├── Mask: 255.255.255.192
@@ -634,10 +577,7 @@ employees_net
 
 Docker automatically assigned .1 as the virtual gateway, so .1 is already occupied. That's why Docker reports fewer dynamically available addresses than the theoretical 62 usable host addresses. (Image 11)
 
-\
-\
 Step 10 — Create the Other Three Subnets
-----------------------------------------
 
 Now implementing the other three /26 networks from the design.
 
@@ -666,13 +606,9 @@ The lab now has:
 
 Original network: 192.168.10.0/24
 
-│
 
 ┌─────────────┼─────────────┐
 
-│ │ │
-
-▼ ▼ ▼
 
 Employees Servers SOC Guest
 
@@ -687,11 +623,8 @@ servers_net
 soc_net
 
 guest_net (Image 12)\
-\
 
-\
 Step 11 — Putting the First Host Inside the Employee Subnet
------------------------------------------------------------
 
 Now, there is networks but no lab computers inside them.
 
@@ -705,13 +638,13 @@ Network: 192.168.10.0/26
 
 I run:
 
-docker run -dit \\
+docker run -dit 
 
---name employee-pc \\
+--name employee-pc 
 
---network employees_net \\
+--network employees_net 
 
---ip 192.168.10.10 \\
+--ip 192.168.10.10 
 
 alpine sh
 
@@ -735,10 +668,8 @@ IPv4: 192.168.10.10\
 Prefix: /26\
 Broadcast: 192.168.10.63\
 Interface: eth0 (Image 13)\
-\
-\
+
 Step 12 — Create and Verify Hosts in the Other Segmented Subnets
-----------------------------------------------------------------
 
 Already there is :
 
@@ -756,17 +687,17 @@ Guest: guest-pc → 192.168.10.200/26
 
 These addresses all fall within the usable ranges which calculated earlier.
 
-### 12A — Create the Server Host
+12A — Create the Server Host
 
 I run:
 
-docker run -dit \\
+docker run -dit 
 
---name server-01 \\
+--name server-01 
 
---network servers_net \\
+--network servers_net 
 
---ip 192.168.10.70 \\
+--ip 192.168.10.70 
 
 alpine sh
 
@@ -800,17 +731,17 @@ server-01 → 192.168.10.70/26 → broadcast 192.168.10.127
 
 Even though both addresses begin with 192.168.10, the /26 mask places them in different subnets. (Image 14)
 
-### 12B — Create the SOC Host
+12B — Create the SOC Host
 
 I run:
 
-docker run -dit \\
+docker run -dit 
 
---name soc-pc \\
+--name soc-pc 
 
---network soc_net \\
+--network soc_net 
 
---ip 192.168.10.140 \\
+--ip 192.168.10.140 
 
 alpine sh
 
@@ -840,20 +771,18 @@ Servers: server-01 → 192.168.10.70/26
 
 SOC: soc-pc → 192.168.10.140/26 (Image 15)
 
-\
-\
 Step 12 C — Create the Guest Host
----------------------------------
+
 
 I run:
 
-docker run -dit \\
+docker run -dit 
 
---name guest-pc \\
+--name guest-pc 
 
---network guest_net \\
+--network guest_net 
 
---ip 192.168.10.200 \\
+--ip 192.168.10.200 
 
 alpine sh
 
@@ -888,10 +817,8 @@ Now there are four separate /26 segments:
 
 Together, the 13A–13C outputs provide strong evidence that the four hosts were placed into the intended subnets. (Image 16)
 
-\
-\
 Step 13 — Test Network Segmentation
------------------------------------
+
 
 Now testing whether a host in one subnet can directly communicate with a host in another subnet.
 
@@ -905,13 +832,7 @@ employee-pc
 
 192.168.10.10/26
 
-│
-
 │ Different subnet
-
-X
-
-│
 
 192.168.10.70/26
 
@@ -921,13 +842,8 @@ Because these are separate Docker bridge networks,I am expect them not to commu
 
 employee-pc (192.168.10.10/26)
 
-│
 
-│ ping → 192.168.10.70
-
-X
-
-│
+ ping → 192.168.10.70
 
 server-01 (192.168.10.70/26)
 
@@ -940,13 +856,7 @@ server-01 (192.168.10.70/26)
 This demonstrates that the Employee and Server hosts are on separate Docker bridge networks and currently have no inter-network routing path connecting them.\
 The 100% packet loss is useful evidence here, not an error in the lab. (Image 17)
 
-Bottom of Form
-
-\
-\
-\
 Step 14 — Test Same-Subnet Communication
-----------------------------------------
 
 Now creating a second Employee workstation inside the same 192.168.10.0/26 subnet.
 
@@ -964,17 +874,17 @@ employee-pc2
 
 Both addresses are within the usable range 192.168.10.1 and 192.168.10.62
 
-### Step 14A — Create the Second Employee Host
+Step 14A — Create the Second Employee Host
 
 I run:
 
-docker run -dit \\
+docker run -dit 
 
---name employee-pc2 \\
+--name employee-pc2 
 
---network employees_net \\
+--network employees_net 
 
---ip 192.168.10.20 \\
+--ip 192.168.10.20 
 
 alpine sh
 
@@ -1002,8 +912,6 @@ employee-pc → 192.168.10.10/26
 
 employee-pc2 → 192.168.10.20/26 (Image 18)
 
-### \
-\
 Step 14B — Ping Between the Two Employee Hosts
 
 From employee-pc, ping the new host:
@@ -1052,7 +960,7 @@ employee-pc employee-pc2
 
 192.168.10.10/26 ───────► 192.168.10.20/26
 
-✅ SUCCESS
+SUCCESS
 
 DIFFERENT SUBNETS
 
@@ -1060,14 +968,11 @@ employee-pc server-01
 
 192.168.10.10/26 ────X──► 192.168.10.70/26
 
-❌ 100% packet loss
+100% packet loss
 
-The reason is important: the two Employee containers share the same Docker bridge/subnet, while the Employee and Server containers are on separate Docker bridges and I have not configured a router between those two virtual networks. (Image 19)\
-\
+The reason is important: the two Employee containers share the same Docker bridge/subnet, while the Employee and Server containers are on separate Docker bridges and I have not configured a router between those two virtual networks. (Image 19)
 
-\
 Step 15 — Examine the Host's Routing Table
-------------------------------------------
 
 Now let's see how employee-pc decides where packets should go.
 
@@ -1094,11 +999,8 @@ This means employee-pc knows two important things:
 192.168.10.0/26 is directly connected through eth0. That's why it could communicate directly with 192.168.10.20.
 
 For an address outside that subnet, the host sends the traffic toward its default gateway 192.168.10.1. However, the separate Docker bridge networks are not configured with an inter-subnet router that forwards traffic between them, which is why the earlier Employee → Server test failed. (Image 20)\
-\
-\
-\
+
 Step 16 — Final Verification and Security Conclusions
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 This is the final step of IP Addressing and Subnetting.
 
@@ -1148,9 +1050,4 @@ The three single-node-wazuh... containers belong to the other Wazuh lab I did 
 
 This lab demonstrated IPv4 addressing and subnetting by dividing a /24 network into four /26 network segments for Employees, Servers, SOC, and Guest systems. Docker bridge networks and Alpine Linux containers were used to create an isolated virtual networking environment. IPv4 addresses, subnet masks, network ranges, broadcast addresses, and default gateways were examined and verified. Same-subnet ICMP communication succeeded, while communication between isolated Docker subnets failed without inter-subnet routing. The lab demonstrated how subnetting organizes network resources and how segmentation, when combined with routing and security controls, can restrict unnecessary communication and reduce opportunities for lateral movement. (Image 21)
 
-Top of Form
 
-Bottom of Form
-
-### \
-\
